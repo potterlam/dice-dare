@@ -2,7 +2,6 @@
 
 一款派對用骰子挑戰遊戲，支援 Game Master 設定挑戰、分享連結給玩家擲骰。
 
-https://potterlam.github.io/dice-dare/
 ## 玩法
 
 ### Game Master 模式
