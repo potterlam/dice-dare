@@ -154,6 +154,23 @@ io.on('connection', (socket) => {
       }
     }
   });
+
+  // ---- WebRTC Signaling ----
+  socket.on('webrtc-offer', ({ roomCode, offer }) => {
+    socket.to(roomCode).emit('webrtc-offer', { offer });
+  });
+
+  socket.on('webrtc-answer', ({ roomCode, answer }) => {
+    socket.to(roomCode).emit('webrtc-answer', { answer });
+  });
+
+  socket.on('webrtc-ice-candidate', ({ roomCode, candidate }) => {
+    socket.to(roomCode).emit('webrtc-ice-candidate', { candidate });
+  });
+
+  socket.on('webrtc-stop', ({ roomCode }) => {
+    socket.to(roomCode).emit('webrtc-stop');
+  });
 });
 
 function generateRoomCode() {

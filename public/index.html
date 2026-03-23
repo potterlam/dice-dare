@@ -102,10 +102,23 @@
       <!-- Camera Stream -->
       <div class="room-section camera-section">
         <h3>📷 <span data-i18n="cameraTitle">鏡頭直播</span></h3>
-        <div class="camera-container" id="cameraContainer">
-          <video id="cameraStream" autoplay playsinline muted></video>
-          <div id="cameraPlaceholder" class="camera-placeholder">📷 <span data-i18n="cameraPlaceholder">按下方按鈕啟動鏡頭</span></div>
+
+        <!-- Remote video (the other person's stream) -->
+        <div class="remote-video-container" id="remoteVideoContainer">
+          <video id="remoteStream" autoplay playsinline></video>
+          <div id="remotePlaceholder" class="camera-placeholder">📡 <span data-i18n="remotePlaceholder">等待對方開啟鏡頭...</span></div>
+          <div class="remote-label" id="remoteLabel" data-i18n="remoteLabel">對方畫面</div>
         </div>
+
+        <!-- Local camera (my own, smaller) -->
+        <div class="local-video-wrapper">
+          <div class="local-video-container" id="cameraContainer">
+            <video id="cameraStream" autoplay playsinline muted></video>
+            <div id="cameraPlaceholder" class="camera-placeholder camera-placeholder-small">📷</div>
+            <div class="local-label" data-i18n="localLabel">我的鏡頭</div>
+          </div>
+        </div>
+
         <div class="button-row" style="justify-content:center;margin-top:12px;">
           <button class="btn btn-camera" id="startCameraBtn">📷 <span data-i18n="startCamera">啟動鏡頭</span></button>
           <button class="btn btn-danger btn-camera-off hidden" id="stopCameraBtn">⏹ <span data-i18n="stopCamera">關閉鏡頭</span></button>

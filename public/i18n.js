@@ -54,7 +54,9 @@ const translations = {
 
     // Camera
     cameraTitle: '鏡頭直播',
-    cameraPlaceholder: '按下方按鈕啟動鏡頭',
+    remotePlaceholder: '等待對方開啟鏡頭...',
+    remoteLabel: '對方畫面',
+    localLabel: '我的鏡頭',
     startCamera: '啟動鏡頭',
     stopCamera: '關閉鏡頭',
 
@@ -143,7 +145,9 @@ const translations = {
 
     // Camera
     cameraTitle: 'Camera Stream',
-    cameraPlaceholder: 'Press button below to start camera',
+    remotePlaceholder: 'Waiting for the other player to start camera...',
+    remoteLabel: 'Their Camera',
+    localLabel: 'My Camera',
     startCamera: 'Start Camera',
     stopCamera: 'Stop Camera',
 

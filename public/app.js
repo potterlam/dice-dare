@@ -8,6 +8,14 @@ const socket = io();
 let role = null;     // 'gm' or 'roller'
 let roomCode = null;
 let cameraStream = null;
+let peerConnection = null;
+let pendingCandidates = [];
+const rtcConfig = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+};
 let gameData = {
   dares: [],
   eliminated: [],
@@ -21,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupRollerJoin();
   setupGameControls();
   setupSocketListeners();
+  setupWebRTCListeners();
   applyTranslations();
 });
 
@@ -399,7 +408,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-/* ---- Camera Stream ---- */
+/* ---- Camera Stream + WebRTC ---- */
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
@@ -410,12 +419,22 @@ async function startCamera() {
     document.getElementById('cameraPlaceholder').classList.add('hidden');
     document.getElementById('startCameraBtn').classList.add('hidden');
     document.getElementById('stopCameraBtn').classList.remove('hidden');
+
+    // Start WebRTC - send our stream to the other peer
+    await createPeerConnection(true);
   } catch (err) {
     showToast(t('cameraError') + (err.message || t('cameraErrorFallback')));
   }
 }
 
 function stopCamera() {
+  // Close WebRTC
+  closePeerConnection();
+  // Notify the other side
+  if (roomCode) {
+    socket.emit('webrtc-stop', { roomCode });
+  }
+
   if (cameraStream) {
     cameraStream.getTracks().forEach(track => track.stop());
     cameraStream = null;
@@ -428,9 +447,117 @@ function stopCamera() {
   document.getElementById('stopCameraBtn').classList.add('hidden');
 }
 
+async function createPeerConnection(isInitiator) {
+  closePeerConnection();
+  peerConnection = new RTCPeerConnection(rtcConfig);
+  pendingCandidates = [];
+
+  // Add local tracks if we have a stream
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, cameraStream);
+    });
+  }
+
+  // When we receive a remote stream, show it
+  peerConnection.ontrack = (event) => {
+    const remoteVideo = document.getElementById('remoteStream');
+    remoteVideo.srcObject = event.streams[0];
+    remoteVideo.classList.add('active');
+    document.getElementById('remotePlaceholder').classList.add('hidden');
+  };
+
+  // Send ICE candidates to the other peer
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate && roomCode) {
+      socket.emit('webrtc-ice-candidate', { roomCode, candidate: event.candidate });
+    }
+  };
+
+  // If we're the initiator, create and send an offer
+  if (isInitiator) {
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit('webrtc-offer', { roomCode, offer });
+  }
+}
+
+function closePeerConnection() {
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
+  // Clear remote video
+  const remoteVideo = document.getElementById('remoteStream');
+  if (remoteVideo) {
+    remoteVideo.srcObject = null;
+    remoteVideo.classList.remove('active');
+  }
+  const remotePlaceholder = document.getElementById('remotePlaceholder');
+  if (remotePlaceholder) {
+    remotePlaceholder.classList.remove('hidden');
+  }
+}
+
+function setupWebRTCListeners() {
+  // Receive an offer from the other peer
+  socket.on('webrtc-offer', async ({ offer }) => {
+    await createPeerConnection(false);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+    // Add any local stream tracks so the offerer can see us too
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => {
+        // Avoid adding duplicate tracks
+        const senders = peerConnection.getSenders();
+        if (!senders.find(s => s.track === track)) {
+          peerConnection.addTrack(track, cameraStream);
+        }
+      });
+    }
+
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    socket.emit('webrtc-answer', { roomCode, answer });
+
+    // Apply any ICE candidates that arrived before we were ready
+    for (const c of pendingCandidates) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(c));
+    }
+    pendingCandidates = [];
+  });
+
+  // Receive an answer from the other peer
+  socket.on('webrtc-answer', async ({ answer }) => {
+    if (peerConnection && peerConnection.signalingState === 'have-local-offer') {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      // Apply any ICE candidates that arrived before the answer
+      for (const c of pendingCandidates) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(c));
+      }
+      pendingCandidates = [];
+    }
+  });
+
+  // Receive ICE candidates
+  socket.on('webrtc-ice-candidate', async ({ candidate }) => {
+    if (peerConnection && peerConnection.remoteDescription) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } else {
+      pendingCandidates.push(candidate);
+    }
+  });
+
+  // Other peer stopped their camera
+  socket.on('webrtc-stop', () => {
+    closePeerConnection();
+  });
+}
+
 /* ---- Back to Lobby ---- */
 function backToLobby() {
   stopCamera();
+  closePeerConnection();
   roomCode = null;
   role = null;
   gameData = { dares: [], eliminated: [], rollHistory: [], gameOver: false };
