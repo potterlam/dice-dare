@@ -150,17 +150,19 @@ function startLocalGame() {
 }
 
 /* ---- Roller View ---- */
+let rollingInterval = null;
+
 function setupRollerView() {
-  document.getElementById('rollBtn').addEventListener('click', rollDice);
+  document.getElementById('rollBtn').addEventListener('click', startRolling);
+  document.getElementById('stopBtn').addEventListener('click', stopAndPickDare);
   document.getElementById('resetBtn').addEventListener('click', resetGame);
   document.getElementById('backToGmBtn').addEventListener('click', () => {
-    // Clear hash and reload to go back to GM view
     window.location.hash = '';
     window.location.reload();
   });
 }
 
-function rollDice() {
+function startRolling() {
   if (!gameData.dares.length) {
     alert('沒有挑戰內容！請先由 GM 設定。');
     return;
@@ -176,44 +178,58 @@ function rollDice() {
   }
 
   const dice = document.getElementById('diceDisplay');
-  const btn = document.getElementById('rollBtn');
-  btn.disabled = true;
+  const rollBtn = document.getElementById('rollBtn');
+  const stopBtn = document.getElementById('stopBtn');
+
+  rollBtn.classList.add('hidden');
+  stopBtn.classList.remove('hidden');
   dice.classList.add('rolling');
-  dice.textContent = '?';
 
-  let count = 0;
+  // Continuously cycle random numbers
   const maxDisplay = Math.min(gameData.dares.length, 6);
-  const interval = setInterval(() => {
+  rollingInterval = setInterval(() => {
     dice.textContent = Math.floor(Math.random() * maxDisplay) + 1;
-    count++;
-    if (count > 12) {
-      clearInterval(interval);
-      dice.classList.remove('rolling');
-
-      // Pick random from available
-      const dareIndex = available[Math.floor(Math.random() * available.length)];
-      const dareNumber = dareIndex + 1;
-      const dareText = gameData.dares[dareIndex];
-      gameData.usedDares.push(dareIndex);
-
-      const record = {
-        number: dareNumber,
-        dare: dareText,
-        timestamp: Date.now()
-      };
-      gameData.rollHistory.push(record);
-
-      dice.textContent = dareNumber;
-      document.getElementById('resultArea').classList.remove('hidden');
-      document.getElementById('resultNumber').textContent = '挑戰 ' + dareNumber;
-      document.getElementById('resultText').textContent = dareText;
-
-      updateDaresList();
-      updateStats();
-      updateRollHistory();
-      btn.disabled = false;
-    }
   }, 100);
+}
+
+function stopAndPickDare() {
+  clearInterval(rollingInterval);
+  rollingInterval = null;
+
+  const dice = document.getElementById('diceDisplay');
+  const rollBtn = document.getElementById('rollBtn');
+  const stopBtn = document.getElementById('stopBtn');
+
+  dice.classList.remove('rolling');
+
+  const available = gameData.dares
+    .map((_, i) => i)
+    .filter(i => !gameData.usedDares.includes(i));
+
+  // Pick random from available
+  const dareIndex = available[Math.floor(Math.random() * available.length)];
+  const dareNumber = dareIndex + 1;
+  const dareText = gameData.dares[dareIndex];
+  gameData.usedDares.push(dareIndex);
+
+  const record = {
+    number: dareNumber,
+    dare: dareText,
+    timestamp: Date.now()
+  };
+  gameData.rollHistory.push(record);
+
+  dice.textContent = dareNumber;
+  document.getElementById('resultArea').classList.remove('hidden');
+  document.getElementById('resultNumber').textContent = '挑戰 ' + dareNumber;
+  document.getElementById('resultText').textContent = dareText;
+
+  stopBtn.classList.add('hidden');
+  rollBtn.classList.remove('hidden');
+
+  updateDaresList();
+  updateStats();
+  updateRollHistory();
 }
 
 function resetGame() {
