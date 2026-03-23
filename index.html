@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>骰子挑戰遊戲</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎲 骰子挑戰遊戲 🎲</h1>
+    <div class="mode-selector" id="modeSelector">
+      <button class="mode-btn" data-mode="gm">Game Master</button>
+      <button class="mode-btn" data-mode="roller">Roller</button>
+    </div>
+
+    <!-- GM View -->
+    <div id="gmView" class="hidden">
+      <div class="room-section">
+        <h2>🎮 Game Master 控制台</h2>
+        <div class="room-section">
+          <h3>設定挑戰內容</h3>
+          <div id="daresSetup">
+            <div id="dareInputs"></div>
+            <div class="button-row">
+              <button class="btn btn-secondary" id="addDareBtn">➕ 新增挑戰</button>
+              <button class="btn btn-danger" id="removeDareBtn">➖ 移除最後一個</button>
+            </div>
+          </div>
+        </div>
+        <div class="button-row" style="margin-top:20px;">
+          <button class="btn" id="generateLinkBtn">🔗 產生分享連結</button>
+          <button class="btn btn-secondary" id="startLocalBtn">🎲 直接開始遊戲</button>
+        </div>
+        <div id="shareLinkArea" class="hidden" style="margin-top:20px;">
+          <label>分享此連結給 Roller：</label>
+          <div class="share-link-box">
+            <input type="text" id="shareLinkInput" readonly>
+            <button class="btn" id="copyLinkBtn">📋 複製</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roller View -->
+    <div id="rollerView" class="hidden">
+      <div class="room-section">
+        <h2>🎲 Roller 控制台</h2>
+        <div class="dares-list">
+          <h4>挑戰列表：</h4>
+          <div id="daresList"></div>
+        </div>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value" id="totalRolls">0</div>
+            <div class="stat-label">總擲骰次數</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="remainingDares">0</div>
+            <div class="stat-label">剩餘挑戰</div>
+          </div>
+        </div>
+      </div>
+      <div class="dice-container" id="diceArea">
+        <h3>準備擲骰！</h3>
+        <div class="dice" id="diceDisplay">?</div>
+        <div class="button-row" style="justify-content:center;">
+          <button class="btn" id="rollBtn" style="font-size:1.2rem;padding:15px 40px;">🎲 擲骰子！</button>
+        </div>
+      </div>
+      <div id="resultArea" class="hidden">
+        <div class="result-display">
+          <div class="result-number" id="resultNumber">-</div>
+          <div class="result-text" id="resultText">等待擲骰...</div>
+        </div>
+      </div>
+      <div class="history-section">
+        <h3>📜 擲骰紀錄</h3>
+        <div id="rollHistory"></div>
+      </div>
+      <div class="button-row" style="justify-content:center;margin-top:20px;">
+        <button class="btn btn-secondary" id="resetBtn">🔄 重置所有挑戰</button>
+        <button class="btn btn-secondary" id="backToGmBtn">⬅ 返回設定</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
