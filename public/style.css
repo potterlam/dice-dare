@@ -383,6 +383,96 @@ input:focus, textarea:focus {
   100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
 }
 
+/* ---- Mode Selector (Role) ---- */
+.mode-selector {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.mode-btn {
+  padding: 30px 40px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 3px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mode-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-bg-card);
+  transform: translateY(-3px);
+}
+
+/* ---- Room Code Display ---- */
+.room-code-section { text-align: center; }
+
+.room-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  margin-top: 15px;
+}
+
+.room-code {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: var(--color-accent);
+  background: var(--color-bg-primary);
+  padding: 10px 25px;
+  border-radius: 12px;
+  border: 2px solid var(--color-accent);
+}
+
+/* ---- Room Info Bar ---- */
+.room-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px 20px;
+  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+/* ---- Connection Status Dot ---- */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-connected { background: var(--color-success); box-shadow: 0 0 6px var(--color-success); }
+.status-disconnected { background: var(--color-danger); box-shadow: 0 0 6px var(--color-danger); }
+
+/* ---- Waiting / Joined Messages ---- */
+.waiting-msg {
+  text-align: center;
+  color: var(--color-warning);
+  font-size: 1.1rem;
+  padding: 15px;
+  animation: pulse-badge 2s ease-in-out infinite alternate;
+}
+
+.joined-msg {
+  text-align: center;
+  color: var(--color-success);
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 15px;
+}
+
 .hidden { display: none !important; }
 
 /* ---- Responsive ---- */
@@ -397,4 +487,7 @@ input:focus, textarea:focus {
   .modal-content { padding: 25px; }
   .final-dare-number { font-size: 2rem; }
   .final-dare-text { font-size: 1.1rem; }
+  .mode-selector { flex-direction: column; align-items: center; }
+  .mode-btn { width: 100%; }
+  .room-code { font-size: 2rem; letter-spacing: 6px; }
 }

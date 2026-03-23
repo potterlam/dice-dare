@@ -11,10 +11,18 @@
     <h1>🎲 骰子挑戰遊戲 🎲</h1>
     <p class="subtitle">擲骰淘汰挑戰 — 隨時可以停，但剩低嘅就要做！</p>
 
-    <!-- Setup View -->
-    <div id="setupView">
+    <!-- Role Selection -->
+    <div id="roleView">
+      <div class="mode-selector">
+        <button class="mode-btn" id="selectGmBtn">👑 Game Master</button>
+        <button class="mode-btn" id="selectRollerBtn">🎲 Roller</button>
+      </div>
+    </div>
+
+    <!-- GM Setup View -->
+    <div id="gmSetupView" class="hidden">
       <div class="room-section">
-        <h2>🎮 設定挑戰內容</h2>
+        <h2>👑 Game Master — 設定挑戰</h2>
         <div id="daresSetup">
           <div id="dareInputs"></div>
           <div class="button-row">
@@ -23,42 +31,62 @@
           </div>
         </div>
         <div class="button-row" style="margin-top:20px;">
-          <button class="btn" id="startGameBtn">🎲 開始遊戲</button>
-          <button class="btn btn-secondary" id="generateLinkBtn">🔗 產生分享連結</button>
+          <button class="btn" id="createRoomBtn">🎮 創建房間</button>
         </div>
-        <div id="shareLinkArea" class="hidden" style="margin-top:20px;">
-          <div class="link-group">
-            <label>🎲 Roller 連結（傳給擲骰者）：</label>
-            <div class="share-link-box">
-              <input type="text" id="rollerLinkInput" readonly>
-              <button class="btn" id="copyRollerLinkBtn">📋 複製</button>
-            </div>
+      </div>
+
+      <!-- Room created info -->
+      <div id="roomCreatedArea" class="hidden">
+        <div class="room-section room-code-section">
+          <h3>房間已創建！</h3>
+          <div class="room-code-display">
+            <div>房間代碼：</div>
+            <div class="room-code" id="gmRoomCode">----</div>
           </div>
-          <div class="link-group" style="margin-top:15px;">
-            <label>👁 GM 觀戰連結（你自己開）：</label>
-            <div class="share-link-box">
-              <input type="text" id="spectateLinkInput" readonly>
-              <button class="btn" id="copySpectateLinkBtn">📋 複製</button>
-              <button class="btn btn-secondary" id="openSpectateBtn">👁 開啟觀戰</button>
-            </div>
-          </div>
+          <p style="text-align:center;color:var(--color-text-secondary);margin-top:10px;">
+            將此代碼傳給 Roller，等佢加入就可以開始！
+          </p>
+          <div id="gmWaitingMsg" class="waiting-msg">⏳ 等待 Roller 加入...</div>
+          <div id="gmRollerJoined" class="joined-msg hidden">✅ Roller 已加入！</div>
         </div>
       </div>
 
       <div class="room-section rules-box">
         <h3>📖 遊戲規則</h3>
         <ul>
-          <li>GM 設定好挑戰清單後開始遊戲</li>
-          <li>Roller 按<strong>「擲骰子」</strong>→ 骰到的數字對應的挑戰會被<strong>淘汰</strong></li>
+          <li>GM 設定挑戰 → 創建房間 → 把房間代碼傳給 Roller</li>
+          <li>Roller 加入房間後按<strong>「擲骰子」</strong>→ 骰到的挑戰被<strong>淘汰</strong></li>
           <li>已淘汰的數字不會再出現，唔會浪費時間</li>
           <li>Roller 隨時可以按<strong>「停！接受懲罰」</strong>→ 從剩餘挑戰中隨機抽一個</li>
           <li>如果只剩 1 個挑戰，自動成為最終懲罰！</li>
+          <li>GM 可以即時睇到 Roller 嘅畫面同步更新</li>
         </ul>
       </div>
     </div>
 
-    <!-- Game View -->
+    <!-- Roller Join View -->
+    <div id="rollerJoinView" class="hidden">
+      <div class="room-section">
+        <h2>🎲 Roller — 加入房間</h2>
+        <div class="input-group">
+          <label for="roomCodeInput">輸入房間代碼：</label>
+          <input type="text" id="roomCodeInput" placeholder="輸入4位數字代碼" maxlength="4" style="text-align:center;font-size:1.5rem;letter-spacing:8px;">
+        </div>
+        <div class="button-row" style="justify-content:center;">
+          <button class="btn" id="joinRoomBtn">加入房間</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game View (shared by GM spectator + Roller) -->
     <div id="gameView" class="hidden">
+      <!-- Room info bar -->
+      <div class="room-info-bar">
+        <span id="roleIndicator"></span>
+        <span>房間: <strong id="gameRoomCode">----</strong></span>
+        <span id="connectionStatus" class="status-dot status-connected"></span>
+      </div>
+
       <!-- Dare Grid -->
       <div class="room-section">
         <h3>挑戰列表 <span class="remaining-badge">剩餘: <span id="remainingCount">0</span></span></h3>
@@ -71,11 +99,11 @@
           <div class="dice" id="diceDisplay">?</div>
         </div>
         <div id="lastRollMsg" class="last-roll-msg"></div>
-        <div class="game-buttons">
+        <div class="game-buttons" id="rollerControls">
           <button class="btn btn-roll" id="rollBtn">🎲 擲骰子</button>
           <button class="btn btn-stop" id="stopBtn">🛑 停！接受懲罰</button>
         </div>
-        <div id="spectatorBadge" class="spectator-badge hidden">👁 GM 觀戰模式 — 等待 Roller 擲骰...</div>
+        <div id="spectatorBadge" class="spectator-badge hidden">👁 GM 觀戰模式 — 即時同步 Roller 畫面</div>
       </div>
 
       <!-- Roll History -->
@@ -86,7 +114,6 @@
 
       <div class="button-row" style="justify-content:center;margin-top:20px;">
         <button class="btn btn-secondary" id="resetBtn">🔄 重新開始</button>
-        <button class="btn btn-secondary" id="backToSetupBtn">⬅ 返回設定</button>
       </div>
     </div>
 
@@ -103,6 +130,7 @@
       </div>
     </div>
   </div>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
