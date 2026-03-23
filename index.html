@@ -27,10 +27,20 @@
           <button class="btn btn-secondary" id="generateLinkBtn">🔗 產生分享連結</button>
         </div>
         <div id="shareLinkArea" class="hidden" style="margin-top:20px;">
-          <label>分享此連結給其他人：</label>
-          <div class="share-link-box">
-            <input type="text" id="shareLinkInput" readonly>
-            <button class="btn" id="copyLinkBtn">📋 複製</button>
+          <div class="link-group">
+            <label>🎲 Roller 連結（傳給擲骰者）：</label>
+            <div class="share-link-box">
+              <input type="text" id="rollerLinkInput" readonly>
+              <button class="btn" id="copyRollerLinkBtn">📋 複製</button>
+            </div>
+          </div>
+          <div class="link-group" style="margin-top:15px;">
+            <label>👁 GM 觀戰連結（你自己開）：</label>
+            <div class="share-link-box">
+              <input type="text" id="spectateLinkInput" readonly>
+              <button class="btn" id="copySpectateLinkBtn">📋 複製</button>
+              <button class="btn btn-secondary" id="openSpectateBtn">👁 開啟觀戰</button>
+            </div>
           </div>
         </div>
       </div>
@@ -65,6 +75,7 @@
           <button class="btn btn-roll" id="rollBtn">🎲 擲骰子</button>
           <button class="btn btn-stop" id="stopBtn">🛑 停！接受懲罰</button>
         </div>
+        <div id="spectatorBadge" class="spectator-badge hidden">👁 GM 觀戰模式 — 等待 Roller 擲骰...</div>
       </div>
 
       <!-- Roll History -->
