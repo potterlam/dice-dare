@@ -411,7 +411,7 @@ function escapeHtml(str) {
 /* ---- Camera Stream + WebRTC ---- */
 async function startCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
     cameraStream = stream;
     const video = document.getElementById('cameraStream');
     video.srcObject = stream;
