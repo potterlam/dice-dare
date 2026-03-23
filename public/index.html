@@ -8,8 +8,14 @@
 </head>
 <body>
   <div class="container">
-    <h1>🎲 骰子挑戰遊戲 🎲</h1>
-    <p class="subtitle">擲骰淘汰挑戰 — 隨時可以停，但剩低嘅就要做！</p>
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="langZhBtn">中文</button>
+      <button class="lang-btn" id="langEnBtn">EN</button>
+    </div>
+
+    <h1>🎲 <span data-i18n="title">骰子挑戰遊戲</span> 🎲</h1>
+    <p class="subtitle" data-i18n="subtitle">擲骰淘汰挑戰 — 隨時可以停，但剩低嘅就要做！</p>
 
     <!-- Role Selection -->
     <div id="roleView">
@@ -22,44 +28,44 @@
     <!-- GM Setup View -->
     <div id="gmSetupView" class="hidden">
       <div class="room-section">
-        <h2>👑 Game Master — 設定挑戰</h2>
+        <h2>👑 Game Master — <span data-i18n="gmSetupTitle">設定挑戰</span></h2>
         <div id="daresSetup">
           <div id="dareInputs"></div>
           <div class="button-row">
-            <button class="btn btn-secondary" id="addDareBtn">➕ 新增挑戰</button>
-            <button class="btn btn-danger" id="removeDareBtn">➖ 移除最後一個</button>
+            <button class="btn btn-secondary" id="addDareBtn">➕ <span data-i18n="addDare">新增挑戰</span></button>
+            <button class="btn btn-danger" id="removeDareBtn">➖ <span data-i18n="removeDare">移除最後一個</span></button>
           </div>
         </div>
         <div class="button-row" style="margin-top:20px;">
-          <button class="btn" id="createRoomBtn">🎮 創建房間</button>
+          <button class="btn" id="createRoomBtn">🎮 <span data-i18n="createRoom">創建房間</span></button>
         </div>
       </div>
 
       <!-- Room created info -->
       <div id="roomCreatedArea" class="hidden">
         <div class="room-section room-code-section">
-          <h3>房間已創建！</h3>
+          <h3 data-i18n="roomCreated">房間已創建！</h3>
           <div class="room-code-display">
-            <div>房間代碼：</div>
+            <div data-i18n="roomCodeLabel">房間代碼：</div>
             <div class="room-code" id="gmRoomCode">----</div>
           </div>
-          <p style="text-align:center;color:var(--color-text-secondary);margin-top:10px;">
+          <p style="text-align:center;color:var(--color-text-secondary);margin-top:10px;" data-i18n="shareCodeMsg">
             將此代碼傳給 Roller，等佢加入就可以開始！
           </p>
-          <div id="gmWaitingMsg" class="waiting-msg">⏳ 等待 Roller 加入...</div>
-          <div id="gmRollerJoined" class="joined-msg hidden">✅ Roller 已加入！</div>
+          <div id="gmWaitingMsg" class="waiting-msg">⏳ <span data-i18n="waitingRoller">等待 Roller 加入...</span></div>
+          <div id="gmRollerJoined" class="joined-msg hidden">✅ <span data-i18n="rollerJoined">Roller 已加入！</span></div>
         </div>
       </div>
 
       <div class="room-section rules-box">
-        <h3>📖 遊戲規則</h3>
+        <h3>📖 <span data-i18n="rulesTitle">遊戲規則</span></h3>
         <ul>
-          <li>GM 設定挑戰 → 創建房間 → 把房間代碼傳給 Roller</li>
-          <li>Roller 加入房間後按<strong>「擲骰子」</strong>→ 骰到的挑戰被<strong>淘汰</strong></li>
-          <li>已淘汰的數字不會再出現，唔會浪費時間</li>
-          <li>Roller 隨時可以按<strong>「停！接受懲罰」</strong>→ 從剩餘挑戰中隨機抽一個</li>
-          <li>如果只剩 1 個挑戰，自動成為最終懲罰！</li>
-          <li>GM 可以即時睇到 Roller 嘅畫面同步更新</li>
+          <li data-i18n="rule1">GM 設定挑戰 → 創建房間 → 把房間代碼傳給 Roller</li>
+          <li>Roller <span data-i18n="rule2">加入房間後按</span><strong data-i18n="rule2roll">「擲骰子」</strong>→ <span data-i18n="rule2result">骰到的挑戰被</span><strong data-i18n="rule2elim">淘汰</strong></li>
+          <li data-i18n="rule3">已淘汰的數字不會再出現，唔會浪費時間</li>
+          <li>Roller <span data-i18n="rule4">隨時可以按</span><strong data-i18n="rule4stop">「停！接受懲罰」</strong>→ <span data-i18n="rule4result">從剩餘挑戰中隨機抽一個</span></li>
+          <li data-i18n="rule5">如果只剩 1 個挑戰，自動成為最終懲罰！</li>
+          <li data-i18n="rule6">GM 可以即時睇到 Roller 嘅畫面同步更新</li>
         </ul>
       </div>
     </div>
@@ -67,13 +73,13 @@
     <!-- Roller Join View -->
     <div id="rollerJoinView" class="hidden">
       <div class="room-section">
-        <h2>🎲 Roller — 加入房間</h2>
+        <h2>🎲 Roller — <span data-i18n="rollerJoinTitle">加入房間</span></h2>
         <div class="input-group">
-          <label for="roomCodeInput">輸入房間代碼：</label>
-          <input type="text" id="roomCodeInput" placeholder="輸入4位數字代碼" maxlength="4" style="text-align:center;font-size:1.5rem;letter-spacing:8px;">
+          <label for="roomCodeInput" data-i18n="enterRoomCode">輸入房間代碼：</label>
+          <input type="text" id="roomCodeInput" data-i18n-placeholder="roomCodePlaceholder" placeholder="輸入4位數字代碼" maxlength="4" style="text-align:center;font-size:1.5rem;letter-spacing:8px;">
         </div>
         <div class="button-row" style="justify-content:center;">
-          <button class="btn" id="joinRoomBtn">加入房間</button>
+          <button class="btn" id="joinRoomBtn" data-i18n="joinRoom">加入房間</button>
         </div>
       </div>
     </div>
@@ -83,14 +89,27 @@
       <!-- Room info bar -->
       <div class="room-info-bar">
         <span id="roleIndicator"></span>
-        <span>房間: <strong id="gameRoomCode">----</strong></span>
+        <span><span data-i18n="roomLabel">房間</span>: <strong id="gameRoomCode">----</strong></span>
         <span id="connectionStatus" class="status-dot status-connected"></span>
       </div>
 
       <!-- Dare Grid -->
       <div class="room-section">
-        <h3>挑戰列表 <span class="remaining-badge">剩餘: <span id="remainingCount">0</span></span></h3>
+        <h3><span data-i18n="dareList">挑戰列表</span> <span class="remaining-badge"><span data-i18n="remaining">剩餘</span>: <span id="remainingCount">0</span></span></h3>
         <div id="dareGrid" class="dare-grid"></div>
+      </div>
+
+      <!-- Camera Stream -->
+      <div class="room-section camera-section">
+        <h3>📷 <span data-i18n="cameraTitle">鏡頭直播</span></h3>
+        <div class="camera-container" id="cameraContainer">
+          <video id="cameraStream" autoplay playsinline muted></video>
+          <div id="cameraPlaceholder" class="camera-placeholder">📷 <span data-i18n="cameraPlaceholder">按下方按鈕啟動鏡頭</span></div>
+        </div>
+        <div class="button-row" style="justify-content:center;margin-top:12px;">
+          <button class="btn btn-camera" id="startCameraBtn">📷 <span data-i18n="startCamera">啟動鏡頭</span></button>
+          <button class="btn btn-danger btn-camera-off hidden" id="stopCameraBtn">⏹ <span data-i18n="stopCamera">關閉鏡頭</span></button>
+        </div>
       </div>
 
       <!-- Dice + Controls -->
@@ -100,20 +119,21 @@
         </div>
         <div id="lastRollMsg" class="last-roll-msg"></div>
         <div class="game-buttons" id="rollerControls">
-          <button class="btn btn-roll" id="rollBtn">🎲 擲骰子</button>
-          <button class="btn btn-stop" id="stopBtn">🛑 停！接受懲罰</button>
+          <button class="btn btn-roll" id="rollBtn">🎲 <span data-i18n="rollDice">擲骰子</span></button>
+          <button class="btn btn-stop" id="stopBtn">🛑 <span data-i18n="stopAccept">停！接受懲罰</span></button>
         </div>
-        <div id="spectatorBadge" class="spectator-badge hidden">👁 GM 觀戰模式 — 即時同步 Roller 畫面</div>
+        <div id="spectatorBadge" class="spectator-badge hidden">👁 <span data-i18n="spectatorMsg">GM 觀戰模式 — 即時同步 Roller 畫面</span></div>
       </div>
 
       <!-- Roll History -->
       <div class="room-section">
-        <h3>📜 淘汰紀錄 <span class="rolled-badge">已擲: <span id="rolledCount">0</span></span></h3>
+        <h3>📜 <span data-i18n="rollHistory">淘汰紀錄</span> <span class="rolled-badge"><span data-i18n="rolled">已擲</span>: <span id="rolledCount">0</span></span></h3>
         <div id="rollHistory"></div>
       </div>
 
       <div class="button-row" style="justify-content:center;margin-top:20px;">
-        <button class="btn btn-secondary" id="resetBtn">🔄 重新開始</button>
+        <button class="btn btn-secondary" id="resetBtn">🔄 <span data-i18n="reset">重新開始</span></button>
+        <button class="btn btn-secondary" id="lobbyBtn">🏠 <span data-i18n="backToLobby">返回大廳</span></button>
       </div>
     </div>
 
@@ -121,16 +141,17 @@
     <div id="resultModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
-        <h2>🎯 最終懲罰！</h2>
+        <h2>🎯 <span data-i18n="finalPunishment">最終懲罰！</span></h2>
         <div class="final-dare-number" id="finalDareNumber"></div>
         <div class="final-dare-text" id="finalDareText"></div>
         <div class="button-row" style="justify-content:center;margin-top:25px;">
-          <button class="btn" id="modalCloseBtn">確認</button>
+          <button class="btn" id="modalCloseBtn" data-i18n="confirm">確認</button>
         </div>
       </div>
     </div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@ const socket = io();
 
 let role = null;     // 'gm' or 'roller'
 let roomCode = null;
+let cameraStream = null;
 let gameData = {
   dares: [],
   eliminated: [],
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupRollerJoin();
   setupGameControls();
   setupSocketListeners();
+  applyTranslations();
 });
 
 /* ---- Role Selection ---- */
@@ -48,16 +50,8 @@ function setupGMView() {
   document.getElementById('createRoomBtn').addEventListener('click', createRoom);
 
   // Pre-fill defaults
-  const defaults = [
-    '講一個尷尬嘅經歷',
-    '模仿一個動物叫聲',
-    '跳一段舞',
-    '唱一首歌',
-    '做10個掌上壓',
-    '講一個冷笑話'
-  ];
   document.getElementById('dareInputs').innerHTML = '';
-  defaults.forEach(t => addDareInput(t));
+  t('defaultDares').forEach(d => addDareInput(d));
 }
 
 function addDareInput(value) {
@@ -66,10 +60,10 @@ function addDareInput(value) {
   const div = document.createElement('div');
   div.className = 'input-group';
   const label = document.createElement('label');
-  label.textContent = '挑戰 ' + index + '：';
+  label.textContent = t('dareLabel') + ' ' + index + '：';
   const textarea = document.createElement('textarea');
   textarea.className = 'dare-input';
-  textarea.placeholder = '輸入挑戰內容...';
+  textarea.placeholder = t('darePlaceholder');
   if (value) textarea.value = value;
   div.appendChild(label);
   div.appendChild(textarea);
@@ -94,10 +88,10 @@ function collectDares() {
 
 function createRoom() {
   const dares = collectDares();
-  if (dares.length < 2) { alert('請至少輸入兩個挑戰！'); return; }
+  if (dares.length < 2) { alert(t('alertMinDares')); return; }
 
   socket.emit('createRoom', { dares }, (res) => {
-    if (!res.success) { alert(res.message || '創建失敗'); return; }
+    if (!res.success) { alert(res.message || t('alertCreateFail')); return; }
     roomCode = res.roomCode;
     gameData.dares = dares;
     gameData.eliminated = [];
@@ -123,10 +117,10 @@ function setupRollerJoin() {
 
 function joinRoom() {
   const code = document.getElementById('roomCodeInput').value.trim();
-  if (code.length !== 4) { alert('請輸入4位數字的房間代碼！'); return; }
+  if (code.length !== 4) { alert(t('alertRoomCode')); return; }
 
   socket.emit('joinRoom', { roomCode: code, role: 'roller' }, (res) => {
-    if (!res.success) { alert(res.message || '加入失敗'); return; }
+    if (!res.success) { alert(res.message || t('alertJoinFail')); return; }
     roomCode = code;
     gameData.dares = res.state.dares;
     gameData.eliminated = res.state.eliminated;
@@ -144,11 +138,11 @@ function enterGameView() {
   document.getElementById('gameRoomCode').textContent = roomCode;
 
   if (role === 'gm') {
-    document.getElementById('roleIndicator').textContent = '👑 GM 觀戰';
+    document.getElementById('roleIndicator').textContent = t('gmSpectator');
     document.getElementById('rollerControls').classList.add('hidden');
     document.getElementById('spectatorBadge').classList.remove('hidden');
   } else {
-    document.getElementById('roleIndicator').textContent = '🎲 Roller';
+    document.getElementById('roleIndicator').textContent = t('rollerRole');
     document.getElementById('rollerControls').classList.remove('hidden');
     document.getElementById('spectatorBadge').classList.add('hidden');
   }
@@ -164,8 +158,11 @@ function setupGameControls() {
   document.getElementById('rollBtn').addEventListener('click', rollDice);
   document.getElementById('stopBtn').addEventListener('click', stopGame);
   document.getElementById('resetBtn').addEventListener('click', resetGame);
+  document.getElementById('lobbyBtn').addEventListener('click', backToLobby);
   document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
   document.querySelector('.modal-overlay').addEventListener('click', closeModal);
+  document.getElementById('startCameraBtn').addEventListener('click', startCamera);
+  document.getElementById('stopCameraBtn').addEventListener('click', stopCamera);
 }
 
 function rollDice() {
@@ -194,7 +191,7 @@ function rollDice() {
       // Ask server to pick and eliminate
       socket.emit('rollDice', { roomCode }, (res) => {
         if (!res.success) {
-          alert(res.message || '擲骰失敗');
+          alert(res.message || t('alertRollFail'));
           rollBtn.disabled = false;
           stopBtn.disabled = false;
           return;
@@ -210,7 +207,7 @@ function stopGame() {
 
   socket.emit('stopGame', { roomCode }, (res) => {
     if (!res.success) {
-      alert(res.message || '操作失敗');
+      alert(res.message || t('alertStopFail'));
     }
     // Server event 'gameOver' will update the UI for everyone
   });
@@ -252,7 +249,7 @@ function setupSocketListeners() {
     });
 
     document.getElementById('diceDisplay').textContent = elim.number;
-    showLastRollMsg('✖ 淘汰 #' + elim.number + '：' + elim.dare);
+    showLastRollMsg(t('eliminatedMsg') + elim.number + '：' + elim.dare);
 
     renderDareGrid();
     updateCounts();
@@ -293,10 +290,10 @@ function setupSocketListeners() {
 
   // Connection events
   socket.on('rollerLeft', () => {
-    if (role === 'gm') showToast('⚠️ Roller 斷線了');
+    if (role === 'gm') showToast(t('rollerDisconnected'));
   });
   socket.on('gmLeft', () => {
-    if (role === 'roller') showToast('⚠️ GM 斷線了');
+    if (role === 'roller') showToast(t('gmDisconnected'));
   });
 
   socket.on('disconnect', () => {
@@ -342,22 +339,23 @@ function updateRollHistory() {
   const container = document.getElementById('rollHistory');
   container.innerHTML = '';
   if (!gameData.rollHistory.length) {
-    container.innerHTML = '<p class="empty-msg">暫無擲骰紀錄，等待擲骰開始！</p>';
+    container.innerHTML = '<p class="empty-msg">' + escapeHtml(t('noHistory')) + '</p>';
     return;
   }
+  const locale = currentLang === 'zh' ? 'zh-HK' : 'en-US';
   [...gameData.rollHistory].reverse().forEach(r => {
     const div = document.createElement('div');
     div.className = 'history-item';
     div.innerHTML =
-      '<span class="history-eliminated">✖ 淘汰</span> ' +
+      '<span class="history-eliminated">' + escapeHtml(t('historyEliminated')) + '</span> ' +
       '<strong>#' + r.number + '</strong> — ' + escapeHtml(r.dare) +
-      '<div class="history-time">' + new Date(r.timestamp).toLocaleString('zh-HK') + '</div>';
+      '<div class="history-time">' + new Date(r.timestamp).toLocaleString(locale) + '</div>';
     container.appendChild(div);
   });
 }
 
 function showFinalDareUI(dareNumber, dareText, dareIndex) {
-  document.getElementById('finalDareNumber').textContent = '挑戰 #' + dareNumber;
+  document.getElementById('finalDareNumber').textContent = t('challengePrefix') + dareNumber;
   document.getElementById('finalDareText').textContent = dareText;
   document.getElementById('resultModal').classList.remove('hidden');
 
@@ -399,4 +397,71 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+/* ---- Camera Stream ---- */
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    cameraStream = stream;
+    const video = document.getElementById('cameraStream');
+    video.srcObject = stream;
+    video.classList.add('active');
+    document.getElementById('cameraPlaceholder').classList.add('hidden');
+    document.getElementById('startCameraBtn').classList.add('hidden');
+    document.getElementById('stopCameraBtn').classList.remove('hidden');
+  } catch (err) {
+    showToast(t('cameraError') + (err.message || t('cameraErrorFallback')));
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  const video = document.getElementById('cameraStream');
+  video.srcObject = null;
+  video.classList.remove('active');
+  document.getElementById('cameraPlaceholder').classList.remove('hidden');
+  document.getElementById('startCameraBtn').classList.remove('hidden');
+  document.getElementById('stopCameraBtn').classList.add('hidden');
+}
+
+/* ---- Back to Lobby ---- */
+function backToLobby() {
+  stopCamera();
+  roomCode = null;
+  role = null;
+  gameData = { dares: [], eliminated: [], rollHistory: [], gameOver: false };
+  document.getElementById('createRoomBtn').disabled = false;
+  document.getElementById('roomCreatedArea').classList.add('hidden');
+  document.getElementById('gmWaitingMsg').classList.remove('hidden');
+  document.getElementById('gmRollerJoined').classList.add('hidden');
+  document.getElementById('roomCodeInput').value = '';
+  showView('roleView');
+}
+
+/* ---- Language Refresh ---- */
+function refreshDynamicText() {
+  // Re-label dare inputs
+  const inputs = document.getElementById('dareInputs');
+  if (inputs) {
+    Array.from(inputs.children).forEach((div, i) => {
+      const label = div.querySelector('label');
+      if (label) label.textContent = t('dareLabel') + ' ' + (i + 1) + '：';
+      const textarea = div.querySelector('textarea');
+      if (textarea) textarea.placeholder = t('darePlaceholder');
+    });
+  }
+
+  // Re-render game view dynamic content if visible
+  if (!document.getElementById('gameView').classList.contains('hidden')) {
+    if (role === 'gm') {
+      document.getElementById('roleIndicator').textContent = t('gmSpectator');
+    } else if (role === 'roller') {
+      document.getElementById('roleIndicator').textContent = t('rollerRole');
+    }
+    updateRollHistory();
+  }
 }
